@@ -20,7 +20,11 @@ const userSchema = new mongoose.Schema({
     mobile: {
         type: Number,
         required: true
-    }
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false, // New users will have 'false' until they verify their email.
+    },
 });
 
 const User = mongoose.model("User", userSchema);

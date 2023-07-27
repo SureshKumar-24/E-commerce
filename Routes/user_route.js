@@ -18,4 +18,9 @@ const registerValidationRules = [
 ]
 
 router.post('/register', registerValidationRules, User.register);
+router.get('/verify/:token', User.verify);
+router.post('/login', User.login);
+router.post('/forgot', User.forgot);
+router.get('/reset-password/:token', User.getresetpassword);
+router.post('/reset-password/:token', User.resetpassword);
 module.exports = router;
