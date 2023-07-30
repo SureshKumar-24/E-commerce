@@ -1,0 +1,10 @@
+const express = require('express');
+const { body } = require('express-validator');
+const admin = require('../Controllers/admin_controller');
+const router = express.Router();
+const Verfiytoken = require('../Helpers/verify_token');
+
+router.get('/alluser', Verfiytoken.verify, Verfiytoken.isAdmin, admin.allUser);
+router.get('/user/:id', Verfiytoken.verify, admin.oneUser);
+
+module.exports = router;

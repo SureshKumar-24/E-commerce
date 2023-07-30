@@ -17,23 +17,23 @@ module.exports.registerUser = async (email, password, name, address, mobile) => 
 
     if (existingUser) {
         throw new Error('User with this email already exists');
-    }
+    } else {
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({
-        email,
-        password: hashedPassword,
-        name,
-        address,
-        mobile
-    });
+        const newUser = new User({
+            email,
+            password: hashedPassword,
+            name,
+            address,
+            mobile
+        });
 
-    await newUser.save();
-    const token = JWT.sign({ email }, process.env.JWT_KEY, { expiresIn: '10m' });
-    console.log('Token::', token);
-    const emailContent = `
+        await newUser.save();
+        const token = JWT.sign({ email }, process.env.JWT_KEY, { expiresIn: '10m' });
+        console.log('Token::', token);
+        const emailContent = `
     <html>
     <head>
         <style>
@@ -89,14 +89,15 @@ module.exports.registerUser = async (email, password, name, address, mobile) => 
     </body>
     </html>
 `;
-    await transporter.sendMail({
-        to: email,
-        from: 'E-commerce <nickm2878@gmail.com>',
-        subject: 'Verification Process',
-        html: emailContent
-    });
+        await transporter.sendMail({
+            to: email,
+            from: 'E-commerce <nickm2878@gmail.com>',
+            subject: 'Verification Process',
+            html: emailContent
+        });
 
-    return newUser;
+        return newUser;
+    }
 }
 
 module.exports.verifyUser = async (token) => {
@@ -118,7 +119,11 @@ module.exports.loginUser = async (email, password, res) => {
             if (!matchPassword) {
                 return res.status(400).json({ msg: "Password doesn't match" });
             } else {
-                const token = JWT.sign({ id: Userdata._id, email: Userdata.email }, process.env.JWT_KEY, { expiresIn: "15d" });
+                var payload = {
+                    id: Userdata._id,
+                    email: Userdata.email
+                };
+                const token = JWT.sign({ payload }, process.env.JWT_KEY, { expiresIn: "15d" });
                 return res.status(200).json({ msg: "user Login Successfully", User: Userdata, token: token });
             }
         }
@@ -290,5 +295,18 @@ module.exports.resetPassword = async (token, new_password, confirm_password, res
     }
 }
 
+module.exports.updateUser = async (_id, name, address, res) => {
+    const updateUser = await User.findByIdAndUpdate(_id, {
+        name: name,
+        address: address
+    }, {
+        new: true
+    }
+    );
+    return res.status(200).json({ msg: "User data Updated Successfully", updateUser });
+}
 
-
+module.exports.deleteUser= async(_id,res)=>{
+    const deleteUser = await User.findByIdAndDelete(_id);
+    return res.status(200).json({msg:"Delete User Successfully", deleteUser})
+}

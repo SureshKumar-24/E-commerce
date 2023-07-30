@@ -103,6 +103,38 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
+    },
+
+    updateUser: async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ errors: errors.array() });
+        }
+        const name = req?.body?.name;
+        const address = req?.body?.address;
+        const _id = req.user.id;
+        try {
+            const UserUpdate = await authService.updateUser(_id, name, address, res);
+            return UserUpdate;
+        } catch (error) {
+            console.log(error);
+            return res.status(401).json({ error: error.message });
+        }
+    },
+
+    deleteUser: async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ errors: errors.array() });
+        }
+        const _id = req.user.id;
+        try {
+            const deleteUser = await authService.deleteUser(_id, res);
+            return deleteUser;
+        } catch (error) {
+            console.log(error);
+            return res.status(401).json({ error: error.message });
+        }
     }
 
 }

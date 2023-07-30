@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
+const User = require('../Model/user_model');
+const mongoose = require("mongoose");
 require("dotenv").config();
 
-const verify = (req, res, next) => {
+module.exports.verify = (req, res, next) => {
     const bearerHeader = req.headers['authorization'];
     try {
         if (typeof bearerHeader !== 'undefined') {
@@ -23,4 +25,20 @@ const verify = (req, res, next) => {
         })
     }
 }
-module.exports = verify;
+
+module.exports.isAdmin = async (req, res, next) => {
+    const email = req.user.email
+    console.log('isAdmin email', email);
+    try {
+        const admin = await User.findOne({ email, role: 'admin' });
+        if (!admin) {
+            return res.status(200).json({ msg: "You are not admin " });
+        }
+        else {
+            next();
+        }
+    } catch (error) {
+        console.log(error);
+        return res.status(401).json({ error: error.message });
+    }
+};
