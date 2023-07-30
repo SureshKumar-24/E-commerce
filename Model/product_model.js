@@ -1,33 +1,60 @@
 const mongoose = require('mongoose'); // Erase if already required
 
 // Declare the Schema of the Mongo model
-var userSchema = new mongoose.Schema({
-    name: {
+var productSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    slug: {
         type: String,
         required: true,
         unique: true,
-        index: true,
+        lowercase: true
     },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    mobile: {
-        type: String,
-        required: true,
-        unique: true,
-    },
-    password: {
+    description: {
         type: String,
         required: true,
     },
-    role: {
+    price: {
+        type: Number,
+        required: true,
+    },
+    category: {
         type: String,
         required: true,
-        default: user
-    }
-});
+    },
+    brand: {
+        type: String,
+        required: true,
+    },
+    quantity: {
+        type: Number,
+        required: true
+    },
+    sold: {
+        type: Number,
+        default: 0,
+        select: false
+    },
+    images: {
+        type: Array,
+    },
+    color: {
+        type: String,
+        required: true
+    },
+    ratings: [
+        {
+            star: Number,
+            postedby: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            }
+        }
+    ]
+}, { timestamps: true });
 
 //Export the model
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('Product', productSchema);

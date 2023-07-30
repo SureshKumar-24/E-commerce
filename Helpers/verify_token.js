@@ -27,7 +27,7 @@ module.exports.verify = (req, res, next) => {
 }
 
 module.exports.isAdmin = async (req, res, next) => {
-    const email = req.user.email
+    const email = req.user.email;
     console.log('isAdmin email', email);
     try {
         const admin = await User.findOne({ email, role: 'admin' });
