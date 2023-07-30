@@ -25,6 +25,19 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: false, // New users will have 'false' until they verify their email.
     },
+    isBlocked: {
+        type: Boolean,
+        default: false
+    },
+    cart: {
+        type: Array,
+        default: []
+    },
+    address: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Address' }],
+    wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    refreshtoken: {
+        type: String,
+    }
 });
 
 const User = mongoose.model("User", userSchema);

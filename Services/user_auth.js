@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const JWT = require('jsonwebtoken');
 const mongoose = require("mongoose");
+const { refreshToken } = require('../config/refreshjwtoken');
+const { generateToken } = require('../config/jwtgeneratetoken');
 require("dotenv").config();
 const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -119,12 +121,30 @@ module.exports.loginUser = async (email, password, res) => {
             if (!matchPassword) {
                 return res.status(400).json({ msg: "Password doesn't match" });
             } else {
-                var payload = {
+                const payload = {
                     id: Userdata._id,
                     email: Userdata.email
-                };
-                const token = JWT.sign({ payload }, process.env.JWT_KEY, { expiresIn: "15d" });
-                return res.status(200).json({ msg: "user Login Successfully", User: Userdata, token: token });
+                }
+                const refreshtoken = await refreshToken(payload);
+                console.log('refreshtoken', refreshtoken);
+                const UpdateUser = await User.findByIdAndUpdate(Userdata._id, {
+                    refreshtoken: refreshtoken
+                }, {
+                    new: true
+                });
+                res.cookie("refreshtoken", refreshtoken, {
+                    httpOnly: true,
+                    maxAge: 24 * 60 * 60 * 1000
+                })
+                return res.status(200).json({
+                    msg: "user Login Successfully",
+                    _id: Userdata._id,
+                    name: Userdata.name,
+                    address: Userdata.address,
+                    mobile: Userdata.mobile,
+                    email: Userdata.email,
+                    token: generateToken(payload)
+                });
             }
         }
         else if (Userdata && Userdata.isEmailVerified == false) {
@@ -306,7 +326,7 @@ module.exports.updateUser = async (_id, name, address, res) => {
     return res.status(200).json({ msg: "User data Updated Successfully", updateUser });
 }
 
-module.exports.deleteUser= async(_id,res)=>{
+module.exports.deleteUser = async (_id, res) => {
     const deleteUser = await User.findByIdAndDelete(_id);
-    return res.status(200).json({msg:"Delete User Successfully", deleteUser})
+    return res.status(200).json({ msg: "Delete User Successfully", deleteUser })
 }
