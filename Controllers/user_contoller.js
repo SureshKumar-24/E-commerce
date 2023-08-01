@@ -4,9 +4,11 @@ const authService = require('../Services/user_auth');
 const { verify } = require('jsonwebtoken');
 const JWT = require('jsonwebtoken');
 require("dotenv").config();
+const validateMongodbId = require('../Helpers/verify_mongoId');
+const asynchandler = require('express-async-handler');
 
 module.exports = {
-    register: async (req, res, next) => {
+    register: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -21,9 +23,9 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    },
+    }),
 
-    verify: async (req, res, next) => {
+    verify: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -38,9 +40,9 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    },
+    }),
 
-    login: async (req, res, next) => {
+    login: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -54,9 +56,9 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    },
+    }),
 
-    forgot: async (req, res, next) => {
+    forgot: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -70,9 +72,9 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    },
+    }),
 
-    getresetpassword: async (req, res, next) => {
+    getresetpassword: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -86,9 +88,9 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    },
+    }),
 
-    resetpassword: async (req, res, next) => {
+    resetpassword: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -103,9 +105,21 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    },
+    }),
+    updatePassword: asynchandler(async (req, res, next) => {
+        const _id = req.user.id;
+        const password = req.body.password;
+        validateMongodbId(_id);
+        try {
+            const updatepassword = await authService.updatePassword(_id, password, res);
+            return updatepassword;
+        } catch (error) {
+            console.log(error);
+            return res.status(401).json({ error: error.message });
+        }
+    }),
 
-    updateUser: async (req, res, next) => {
+    updateUser: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -120,9 +134,9 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    },
+    }),
 
-    deleteUser: async (req, res, next) => {
+    deleteUser: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
@@ -135,6 +149,6 @@ module.exports = {
             console.log(error);
             return res.status(401).json({ error: error.message });
         }
-    }
+    }),
 
 }

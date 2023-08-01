@@ -2,7 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const User = require('../Controllers/user_contoller');
 const router = express.Router();
-const Verfiytoken = require('../Helpers/verify_token');
+const Verifytoken = require('../Helpers/verify_token');
 
 const registerValidationRules = [
     body('email').isEmail().withMessage('Invalid email address'),
@@ -24,6 +24,7 @@ router.post('/login', User.login);
 router.post('/forgot', User.forgot);
 router.get('/reset-password/:token', User.getresetpassword);
 router.post('/reset-password/:token', User.resetpassword);
-router.post('/update', Verfiytoken.verify, User.updateUser);
-router.delete('/delete', Verfiytoken.verify, User.deleteUser);
+router.post('/update', Verifytoken.verify, User.updateUser);
+router.post('/password', Verifytoken.verify, User.updatePassword);
+router.delete('/delete', Verifytoken.verify, User.deleteUser);
 module.exports = router;

@@ -224,7 +224,7 @@ module.exports.forgotUser = async (email, res) => {
     const userdata = await User.findOne({ email });
 
     if (!userdata) {
-        return res.status(400).json({ success: false, msg: 'Email is not registered' });
+        return res.status(400).json({ success: false, msg: 'User not found with this email' });
     } else {
         const token = JWT.sign({ id: userdata._id, email: userdata.email }, process.env.JWT_KEY, { expiresIn: "10m" });
         const emailContent = `
@@ -324,6 +324,20 @@ module.exports.updateUser = async (_id, name, address, res) => {
     }
     );
     return res.status(200).json({ msg: "User data Updated Successfully", updateUser });
+}
+
+module.exports.updatePassword = async (_id, password, res) => {
+    const user = await User.findById(_id);
+    const matchPassword = await bcrypt.compare(password, user.password);
+    console.log('matchpassword', matchPassword);
+    if (matchPassword) {
+        return res.status(400).json({ msg: "Provide another password instead previous one" });
+    } else {
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
+        const updatePassword = await User.updateOne({ _id }, { $set: { password: hashPassword } }, { new: true });
+        return res.status(200).json({ msg: "Password Updated Successfully", updatePassword });
+    }
 }
 
 module.exports.deleteUser = async (_id, res) => {

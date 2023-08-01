@@ -37,7 +37,10 @@ const userSchema = new mongoose.Schema({
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
     refreshtoken: {
         type: String,
-    }
+    },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
 });
 
 const User = mongoose.model("User", userSchema);

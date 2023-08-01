@@ -1,6 +1,4 @@
-const { validationResult } = require("express-validator");
 const authService = require('../Services/admin');
-const { getLogger } = require("nodemailer/lib/shared");
 const validateMongodbId = require('../Helpers/verify_mongoId');
 module.exports = {
     allUser: async (req, res, next) => {
