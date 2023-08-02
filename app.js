@@ -8,7 +8,8 @@ const cookieParser = require('cookie-parser');
 const Register = require('./Routes/user_route');
 const Admin = require('./Routes/admin_route');
 const Product = require('./Routes/product_route');
-const morgan= require('morgan');
+const Blog = require('./Routes/blog_route');
+const morgan = require('morgan');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -17,6 +18,7 @@ app.set('view engine', 'ejs');
 app.use(Register);
 app.use(Admin);
 app.use(Product);
+app.use(Blog);
 app.use(cookieParser());
 app.use(morgan('dev'));
 
