@@ -17,6 +17,7 @@ module.exports = {
 
     updateBlog: asynchandler(async (req, res, next) => {
         const id = req.params.id;
+        console.log('upateBlog', id);
         validateMongodbId(id);
         try {
             const updateBlog = await Blog.findByIdAndUpdate(id, req.body, { new: true });

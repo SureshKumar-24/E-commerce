@@ -9,6 +9,9 @@ const Register = require('./Routes/user_route');
 const Admin = require('./Routes/admin_route');
 const Product = require('./Routes/product_route');
 const Blog = require('./Routes/blog_route');
+const Category = require('./Routes/productcategory_route');
+const BlogCategory = require('./Routes/blogcategory_route');
+const Brand = require('./Routes/brand_route');
 const morgan = require('morgan');
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -19,6 +22,9 @@ app.use(Register);
 app.use(Admin);
 app.use(Product);
 app.use(Blog);
+app.use(Category);
+app.use(BlogCategory);
+app.use(Brand);
 app.use(cookieParser());
 app.use(morgan('dev'));
 

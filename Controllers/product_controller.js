@@ -1,7 +1,6 @@
 const Product = require('../Model/product_model');
 const { validationResult } = require("express-validator");
 const validateMongodbId = require('../Helpers/verify_mongoId');
-const productservices = require('../Services/product');
 const asynchandler = require('express-async-handler');
 const slugify = require('slugify');
 module.exports = {
@@ -46,7 +45,6 @@ module.exports = {
 
             let queryStr = JSON.stringify(queryObj);
             queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-            console.log('jjjj', JSON.parse(queryStr));
             // const getallProduct = await Product.where('category').equals(req.query.category);
             // const getallProduct = await Product.find(queryObj);
             let query = Product.find(JSON.parse(queryStr));
@@ -76,7 +74,7 @@ module.exports = {
             const limit = req.query.limit;
             const skip = (page - 1) * limit;
             query = query.skip(skip).limit(limit);
-            
+
             if (req.query.page) {
                 const productcount = await Product.countDocuments();
                 if (skip >= productcount) throw new Error(`This page dosn't exist `)
