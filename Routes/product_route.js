@@ -10,4 +10,6 @@ router.get('/getproduct/:id', Product.getProduct);
 router.get('/getallproduct', Product.getallProduct);
 router.post('/updateproduct/:id', Verifytoken.verify, Verifytoken.isAdmin, Product.productUpdate);
 router.delete('/deleteproduct/:id', Verifytoken.verify, Verifytoken.isAdmin, Product.deleteUpdate);
+router.post('/wishlist', Verifytoken.verify, Product.addtoWishlist);
+router.post('/rating', Verifytoken.verify, Product.rating);
 module.exports = router;

@@ -1,4 +1,5 @@
 const Product = require('../Model/product_model');
+const User = require('../Model/user_model');
 const { validationResult } = require("express-validator");
 const validateMongodbId = require('../Helpers/verify_mongoId');
 const asynchandler = require('express-async-handler');
@@ -106,6 +107,7 @@ module.exports = {
 
     deleteUpdate: asynchandler(async (req, res, next) => {
         const id = req.params.id;
+        validateMongodbId(id);
         try {
             const deleteproduct = await Product.findByIdAndDelete(id);
             return res.status(201).json({ msg: "Product Delete Successfully", Product: deleteproduct });
@@ -115,6 +117,94 @@ module.exports = {
             return res.status(401).json({ error: error.message });
         }
     }),
+
+    addtoWishlist: asynchandler(async (req, res, next) => {
+        const id = req.user.id;
+        validateMongodbId(id);
+        const { prodId } = req.body;
+        try {
+            const user = await User.findById(id);
+            const alreadyadded = user.wishlist.find((id) => id.toString() === prodId);
+            if (alreadyadded) {
+                let user = await User.findByIdAndUpdate(id, {
+                    $pull: { wishlist: prodId }
+                }, {
+                    new: true
+                });
+                return res.status(201).json({ msg: "Product  Already Wishlist Successfully", Product: user });
+            } else {
+                let user = await User.findByIdAndUpdate(id, {
+                    $push: { wishlist: prodId }
+                }, {
+                    new: true
+                });
+                return res.status(201).json({ msg: "Product  Add to wishlist  Successfully", Product: user });
+            }
+
+        }
+        catch (error) {
+            console.log(error);
+            return res.status(401).json({ error: error.message });
+        }
+    }),
+
+    rating: asynchandler(async (req, res, next) => {
+        const id = req.user.id;
+        validateMongodbId(id);
+        const { star, prodId, comment } = req.body;
+        try {
+            const product = await Product.findById(prodId);
+            let alreadyrated = product.ratings.find((userId) => userId.postedby.toString() === id.toString());
+            if (alreadyrated) {
+                const updatingRating = await Product.updateOne({
+                    ratings: { $elemMatch: alreadyrated }
+                }, {
+                    $set: {
+                        "ratings.$.star": star,
+                        "ratings.$.comment": comment
+                    }
+                }, {
+                    new: true
+                });
+                return res.status(201).json({ msg: "Product  update rating  Successfully", Product: updatingRating });
+            } else {
+                let rating = await Product.findByIdAndUpdate(prodId, {
+                    $push: {
+                        ratings: {
+                            star: star,
+                            comment: comment,
+                            postedby: id
+                        }
+                    }
+                }, {
+                    new: true
+                });
+            }
+            const getallratings = await Product.findById(prodId);
+            console.log('getallratings', getallratings);
+            let totalratings = getallratings.ratings.length;
+            console.log('totalratings', totalratings);
+            let ratingsum = getallratings.ratings
+                .map((item) => item.star)
+                .reduce((prev, curr) => prev + curr, 0);
+            console.log('ratingsum', ratingsum);
+            let actualRating = Math.round(ratingsum / totalratings);
+            console.log('actualRating', actualRating);
+            let finalproduct = await Product.findByIdAndUpdate(prodId, {
+                totalratings: actualRating
+            }, {
+                new: true
+            }
+            );
+            return res.status(201).json({ msg: "Product all rating get Successfully", Product: finalproduct })
+        }
+        catch (error) {
+            console.log(error);
+            return res.status(401).json({ error: error.message });
+        }
+    }),
+
+
 
 }
 
