@@ -220,6 +220,44 @@ module.exports.loginUser = async (email, password, res) => {
     }
 }
 
+module.exports.loginAdmin = async (email, password, res) => {
+    const Userdata = await User.findOne({ email });
+    if (Userdata.role !== "admin") throw new Error("Not Authorized");
+    if (Userdata) {
+        const matchPassword = await bcrypt.compare(password, Userdata.password);
+        if (!matchPassword) {
+            return res.status(400).json({ msg: "Password doesn't match" });
+        } else {
+            const payload = {
+                id: Userdata._id,
+                email: Userdata.email
+            }
+            const refreshtoken = await refreshToken(payload);
+            console.log('refreshtoken', refreshtoken);
+            const UpdateUser = await User.findByIdAndUpdate(Userdata._id, {
+                refreshtoken: refreshtoken
+            }, {
+                new: true
+            });
+            res.cookie("refreshtoken", refreshtoken, {
+                httpOnly: true,
+                maxAge: 24 * 60 * 60 * 1000
+            })
+            return res.status(200).json({
+                msg: "Admin Login Successfully",
+                _id: Userdata._id,
+                name: Userdata.name,
+                address: Userdata.address,
+                mobile: Userdata.mobile,
+                email: Userdata.email,
+                token: generateToken(payload)
+            });
+        }
+    } else {
+        return res.status(400).json({ msg: "Admin is not found" });
+    }
+}
+
 module.exports.forgotUser = async (email, res) => {
     const userdata = await User.findOne({ email });
 

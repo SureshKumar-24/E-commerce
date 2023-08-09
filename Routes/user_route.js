@@ -20,10 +20,14 @@ const registerValidationRules = [
 
 router.post('/register', registerValidationRules, User.register);
 router.get('/verify/:token', User.verify);
+
 router.post('/login', User.login);
+router.post('/admin/login', User.loginadmin);
 router.post('/forgot', User.forgot);
+
 router.get('/reset-password/:token', User.getresetpassword);
 router.post('/reset-password/:token', User.resetpassword);
+router.get('/getwishlist', Verifytoken.verify, User.getWishlist);
 router.post('/update', Verifytoken.verify, User.updateUser);
 router.post('/password', Verifytoken.verify, User.updatePassword);
 router.delete('/delete', Verifytoken.verify, User.deleteUser);

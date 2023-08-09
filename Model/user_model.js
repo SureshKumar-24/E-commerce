@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    role: {
+        type: String,
+        default: "user",
+    },
     isEmailVerified: {
         type: Boolean,
         default: false, // New users will have 'false' until they verify their email.

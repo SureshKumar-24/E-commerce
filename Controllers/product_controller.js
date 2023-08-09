@@ -4,6 +4,8 @@ const { validationResult } = require("express-validator");
 const validateMongodbId = require('../Helpers/verify_mongoId');
 const asynchandler = require('express-async-handler');
 const slugify = require('slugify');
+const cloudinaryUpload = require('../Helpers/cloudinary');
+const fs= require('fs');
 module.exports = {
     createProduct: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
@@ -204,7 +206,37 @@ module.exports = {
         }
     }),
 
-
+    uploadImages: asynchandler(async (req, res, next) => {
+        const id = req.params.id;
+        validateMongodbId(id);
+        try {
+            const uploader = (path) => cloudinaryUpload.cloudinaryUpload(path, "images");
+            const urls = [];
+            const files = req.files;
+            for (const file of files) {
+                const { path } = file;
+                const newpath = await uploader(path);
+                urls.push(newpath);
+                console.log('path',path);
+                fs.unlinkSync(path);
+            }
+            const findProduct = await Product.findByIdAndUpdate(id,
+                {
+                    images: urls.map(file => {
+                        return file;
+                    })
+                },
+                {
+                    new: true
+                }
+            );
+            return res.status(201).json({ msg: "Images Upload Succesfully", findProduct })
+        }
+        catch (error) {
+            console.log(error);
+            return res.status(401).json({ error: error.message });
+        }
+    }),
 
 }
 

@@ -58,6 +58,22 @@ module.exports = {
         }
     }),
 
+    loginadmin: asynchandler(async (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ errors: errors.array() });
+        }
+        const { email, password } = req.body;
+        try {
+            const Admin = await authService.loginAdmin(email, password, res);
+            return Admin;
+        }
+        catch (error) {
+            console.log(error);
+            return res.status(401).json({ error: error.message });
+        }
+    }),
+
     forgot: asynchandler(async (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -150,5 +166,16 @@ module.exports = {
             return res.status(401).json({ error: error.message });
         }
     }),
+
+    getWishlist: asynchandler(async (req, res) => {
+        const _id = req.user.id;
+        try {
+            console.log('id', _id);
+            const findUser = await User.findById(_id).populate("wishlist");
+            return res.status(200).json({ findUser });
+        } catch (error) {
+            throw new Error(error);
+        }
+    })
 
 }

@@ -12,6 +12,7 @@ const Blog = require('./Routes/blog_route');
 const Category = require('./Routes/productcategory_route');
 const BlogCategory = require('./Routes/blogcategory_route');
 const Brand = require('./Routes/brand_route');
+const Coupon = require('./Routes/coupon_route');
 const morgan = require('morgan');
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -25,6 +26,7 @@ app.use(Blog);
 app.use(Category);
 app.use(BlogCategory);
 app.use(Brand);
+app.use(Coupon);
 app.use(cookieParser());
 app.use(morgan('dev'));
 
