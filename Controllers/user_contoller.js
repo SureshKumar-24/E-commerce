@@ -123,11 +123,11 @@ module.exports = {
         }
     }),
     updatePassword: asynchandler(async (req, res, next) => {
-        const _id = req.user.id;
+        const id = req.user.id;
         const password = req.body.password;
-        validateMongodbId(_id);
+        validateMongodbId(id);
         try {
-            const updatepassword = await authService.updatePassword(_id, password, res);
+            const updatepassword = await authService.updatePassword(id, password, res);
             return updatepassword;
         } catch (error) {
             console.log(error);
@@ -142,9 +142,9 @@ module.exports = {
         }
         const name = req?.body?.name;
         const address = req?.body?.address;
-        const _id = req.user.id;
+        const id = req.user.id;
         try {
-            const UserUpdate = await authService.updateUser(_id, name, address, res);
+            const UserUpdate = await authService.updateUser(id, name, address, res);
             return UserUpdate;
         } catch (error) {
             console.log(error);
@@ -157,9 +157,10 @@ module.exports = {
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
         }
-        const _id = req.user.id;
+        const id = req.user.id;
+        validateMongodbId(id);
         try {
-            const deleteUser = await authService.deleteUser(_id, res);
+            const deleteUser = await authService.deleteUser(id, res);
             return deleteUser;
         } catch (error) {
             console.log(error);
@@ -168,14 +169,34 @@ module.exports = {
     }),
 
     getWishlist: asynchandler(async (req, res) => {
-        const _id = req.user.id;
+        const id = req.user.id;
+        validateMongodbId(id);
         try {
-            console.log('id', _id);
-            const findUser = await User.findById(_id).populate("wishlist");
+            const findUser = await User.findById(id).populate("wishlist");
             return res.status(200).json({ findUser });
         } catch (error) {
             throw new Error(error);
         }
-    })
+    }),
+
+    saveAddress: asynchandler(async (req, res) => {
+        try {
+            const id = req.user.id;
+            validateMongodbId(id);
+            console.log('id', id);
+            const address = req.body.address;
+            console.log('add', address)
+            const updatedUser = await User.findByIdAndUpdate(
+                id,
+                { address: address },
+                { new: true }
+            ).lean();
+            return res.status(200).json({ msg: "Saved Address Successfully",updatedUser })
+        } catch (error) {
+            throw new Error(error);
+        }
+    }),
+
+
 
 }

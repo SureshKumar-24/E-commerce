@@ -30,5 +30,6 @@ router.post('/reset-password/:token', User.resetpassword);
 router.get('/getwishlist', Verifytoken.verify, User.getWishlist);
 router.post('/update', Verifytoken.verify, User.updateUser);
 router.post('/password', Verifytoken.verify, User.updatePassword);
+router.post('/address', Verifytoken.verify, User.saveAddress);
 router.delete('/delete', Verifytoken.verify, User.deleteUser);
 module.exports = router;
