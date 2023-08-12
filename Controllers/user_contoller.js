@@ -2,6 +2,8 @@ const User = require('../Model/user_model');
 const Product = require('../Model/product_model');
 const Cart = require('../Model/cart_model');
 const Coupon = require('../Model/coupon_model');
+const Order = require('../Model/order_model');
+const uniqid = require("uniqid");
 const { validationResult } = require("express-validator");
 const authService = require('../Services/user_auth');
 const JWT = require('jsonwebtoken');
@@ -265,9 +267,9 @@ module.exports = {
         validateMongodbId(_id);
         try {
             const { coupon } = req.body;
-            console.log('coupon',coupon);
+            console.log('coupon', coupon);
             const validcoupon = await Coupon.findOne({ name: coupon });
-            console.log('validcoupon',validcoupon);
+            console.log('validcoupon', validcoupon);
             const user = await User.findById(_id);
             if (validcoupon == null) {
                 throw new Error("Invalid Coupon");
@@ -285,4 +287,96 @@ module.exports = {
         }
     }),
 
+    createOrder: asynchandler(async (req, res) => {
+        const { COD, couponApplied } = req.body;
+        const _id = req.user.id;
+        validateMongodbId(_id);
+        try {
+            if (!COD) throw new Error("Create cash order failed");
+            const user = await User.findById(_id);
+            let userCart = await Cart.findOne({ orderby: user._id });
+            console.log('usercart', userCart);
+            let finalAmout = 0;
+            if (couponApplied && userCart.totalAfterDiscount) {
+                finalAmout = userCart.totalAfterDiscount;
+                console.log('couponapplied', finalAmout);
+            } else {
+                finalAmout = userCart.cartTotal;
+                console.log('withoutcouponapplied', finalAmout);
+            }
+
+            let newOrder = await new Order({
+                products: userCart.products,
+                paymentIntent: {
+                    id: uniqid(),
+                    method: "COD",
+                    amount: finalAmout,
+                    status: "Cash on Delivery",
+                    created: Date.now(),
+                    currency: "usd",
+                },
+                orderby: user._id,
+                orderStatus: "Cash on Delivery",
+            }).save();
+            let update = userCart.products.map((item) => {
+                return {
+                    updateOne: {
+                        filter: { _id: item.product._id },
+                        update: { $inc: { quantity: -item.count, sold: +item.count } },
+                    },
+                };
+            });
+            const updated = await Product.bulkWrite(update, {});
+            res.json({ message: "success", updated });
+        } catch (error) {
+            throw new Error(error);
+        }
+    }),
+
+    getOrders: asynchandler(async (req, res) => {
+        const _id = req.user.id;
+        validateMongodbId(_id);
+        try {
+            const userorders = await Order.findOne({ orderby: _id })
+                .populate("products.product")
+                .populate("orderby")
+                .exec();
+            res.status(200).json({ msg: "Order get Successfully", userorders });
+        } catch (error) {
+            throw new Error(error);
+        }
+    }),
+
+    getAllOrders: asynchandler(async (req, res) => {
+        try {
+            const alluserorders = await Order.find()
+                .populate("products.product")
+                .populate("orderby")
+                .exec();
+            res.status(200).json({ msg: "Order all get Successfully",alluserorders });
+        } catch (error) {
+            throw new Error(error);
+        }
+    }),
+
+    updateOrderStatus: asynchandler(async (req, res) => {
+        const { status } = req.body;
+        const { id } = req.params;
+        validateMongodbId(id);
+        try {
+            const updateOrderStatus = await Order.findByIdAndUpdate(
+                id,
+                {
+                    orderStatus: status,
+                    paymentIntent: {
+                        status: status,
+                    },
+                },
+                { new: true }
+            );
+            res.status(200).json({ msg: "updated", updateOrderStatus });
+        } catch (error) {
+            throw new Error(error);
+        }
+    })
 }
